@@ -463,7 +463,7 @@ user it is a Set type.
 
 ## Attribute type
 
-The metadata type is exactly like the Map type, but instead of the `%`
+The attribute type is exactly like the Map type, but instead of the `%`
 first byte, the `|` byte is used. Attributes describe a dictionary exactly
 like the Map type, however the client should not consider such a dictionary
 part of the reply, but *just auxiliary data* that is used in order to

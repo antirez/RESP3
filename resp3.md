@@ -146,7 +146,7 @@ a much simpler to understand name for types, so you'll see no mention of
 
 The following are the types implemented by RESP3:
 
-**Types equivalent to RESPv2**
+**Types equivalent to RESP version 2**
 
 * Array: an ordered collection of N other types
 * Blob string: binary safe strings
@@ -154,7 +154,7 @@ The following are the types implemented by RESP3:
 * Simple error: a space efficient non binary safe error code and message
 * Number: an integer in the signed 64 bit range
 
-**Types introduced by RESPv3**
+**Types introduced by RESP3**
 
 * Null: a single null value replacing RESP v2 `*-1` and `$-1` null values.
 * Double: a floating point number

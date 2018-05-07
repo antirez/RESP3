@@ -47,7 +47,7 @@ to bind together the serialization and the semantic looks a more effective
 way to reach the goals of RESP3.
 
 A different problem is the fact that such serialization protocols are more
-complex then RESP, so client libraries would have to rely on a separated
+complex than RESP, so client libraries would have to rely on a separated
 library implementing the serialization protocol. The library may not have
 support for streaming directly to a socket, and may return a buffer instead,
 leading to potential inefficiencies. Relying on a library in order to perform
@@ -64,7 +64,7 @@ In short this specification is written believing that designing a good
 serialization format is different compared to designing a protocol
 specifically suited in order to support the chat between a client and
 its server. RESP3 aims to create a protocol which is not just suitable
-for Redis, but in general to solve the general problem of client-server
+for Redis, but more broadly to solve the general problem of client-server
 communication in many scenarios even outside Redis and outside the
 database space.
 

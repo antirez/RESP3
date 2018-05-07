@@ -117,7 +117,7 @@ is just **RESP3** and not RESP v3 or RESP 3.0.
 The protocol is designed to handle request-response chats between clients
 and servers, where the client performs some kind of request, and the server
 replies with some data. The protocol is especially suitable for databases due
-to its ability to return complex data types and associated informations to
+to its ability to return complex data types and associated information to
 augment the returned data (for instance the popularity index of a given
 information).
 
@@ -164,7 +164,7 @@ The following are the types implemented by RESP3:
 * Map: an ordered collection of key-value pairs. Keys and values can be any other RESP3 type.
 * Set: an unordered collection of N other types.
 * Attribute: Like the Map type, but the client should keep reading the reply ignoring the attribute type, and return it to the client as additional information.
-* Push: Out of band data. The format is like the Array type, but the client should just check the first string element, stating the type of the out of band data, a call a callback if there is one registered for this specific type of push information. Push types are not related to replies, since they are informations that the server may push at any time in the connection, so the client should keep reading if it is reading the reply of a command.
+* Push: Out of band data. The format is like the Array type, but the client should just check the first string element, stating the type of the out of band data, a call a callback if there is one registered for this specific type of push information. Push types are not related to replies, since they are information that the server may push at any time in the connection, so the client should keep reading if it is reading the reply of a command.
 * Hello: Like the Map type, but is sent only when the connection between the client and the server is established, in order to welcome the client with different information like the name of the server, its version, and so forth.
 * Big number: a large number non representable by the Number type
 
@@ -433,7 +433,7 @@ and modules will likely be able to do so.
 
 Client libraries should return Maps using the idiomatic dictionary type
 available. However low level languages like C will likely still return
-an array of items, but with type informations so that the user can tell
+an array of items, but with type information so that the user can tell
 the reply is actually a dictionary.
 
 ## Set reply

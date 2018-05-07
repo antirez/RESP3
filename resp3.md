@@ -121,7 +121,7 @@ to its ability to return complex data types and associated informations to
 augment the returned data (for instance the popularity index of a given
 information).
 
-The RESP3 protocol is asymmetrical: only a subset can be send by the client
+The RESP3 protocol is asymmetrical: only a subset can be sent by the client
 to the server, while the server can return the full set of types available.
 This is due to the fact that RESP is designed to send non structured commands
 like `SET mykey somevalue` or `SADD myset a b c d`. Such commands can be

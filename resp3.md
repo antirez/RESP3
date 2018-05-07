@@ -159,7 +159,7 @@ The following are the types implemented by RESP3:
 * Null: a single null value replacing RESP v2 `*-1` and `$-1` null values.
 * Double: a floating point number
 * Boolean: true or false
-* Error: binary safe error code and message.
+* Blob error: binary safe error code and message.
 * Verbatim string: a binary safe string that should be displayed to humans without any escaping or filtering. For instance the output of `LATENCY DOCTOR` in Redis.
 * Map: an ordered collection of key-value pairs. Keys and values can be any other RESP3 type.
 * Set: an unordered collection of N other types.
@@ -272,7 +272,7 @@ the boolean type should return to the client the canonical values used
 to represent true and false in such languages. For instance a C program
 should likely return an integer type with a value of 0 or 1.
 
-**Error**
+**Blob error**
 
 The general form is `!<length>\n<bytes>\n`. It is exactly like the String
 type. However like the Simple error type, the first uppercase word represents

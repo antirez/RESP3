@@ -60,7 +60,7 @@ unknown length, or streaming of arrays, two features that RESP3 supports
 and that this specification describes, are not easy to found among
 existing serialization protocols.
 
-In short this specification is written believing that designing a good
+In short this specification was written believing that designing a good
 serialization format is different compared to designing a protocol
 specifically suited in order to support the chat between a client and
 its server. RESP3 aims to create a protocol which is not just suitable

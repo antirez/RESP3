@@ -391,7 +391,7 @@ Of course an array can also contain other nested arrays:
             $5<LF>
             hello<LF>
             :2<LF>
-        #f
+        #f<LF>
 
 The above represents the array `[[1,"hello",2],false]`
 

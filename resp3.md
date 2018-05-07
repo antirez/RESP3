@@ -5,7 +5,7 @@ Versions history:
 
 ## Background
 
-The Redis protocol has served us well in the past years, showing that, if carefully designed, a simple human readable protocol is not the bottleneck in the client server communication, and that the simplicity of the design is a major advantage in creating an healthy client libraries ecosystem.
+The Redis protocol has served us well in the past years, showing that, if carefully designed, a simple human readable protocol is not the bottleneck in the client server communication, and that the simplicity of the design is a major advantage in creating a healthy client libraries ecosystem.
 
 Yet the Redis experience has shown that after about six years from its introduction (when it replaced the initial Redis protocol), the current RESP protocol could be improved, especially in order to make client implementations simpler and to support new features.
 

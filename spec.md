@@ -461,6 +461,18 @@ In lower level programming languages such as C, the type should be still
 reported as a linear array, together with type information to signal the
 user it is a Set type.
 
+Normally Set replies should not contain the same element emitted multiple
+times, but the protocol does not enforce that: client libraries should try
+to handle such case, and in case of repeated elements, do some effort to
+avoid returning duplicated data, at least if some form of hash is used in
+order to return the reply. Otherwise when returning an array just reading
+what the protocol contians, duplicated items if present could be passed
+by client libraries to the caller. Many implementations will find it very
+natural to avoid duplicates. For instance they'll try to add every read
+element in some Map or Hash or Set data type, and adding the same element
+again will either replace the old copy or will fail silently, retaining the
+old copy.
+
 ## Attribute type
 
 The attribute type is exactly like the Map type, but instead of the `%`

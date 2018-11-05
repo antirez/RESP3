@@ -25,7 +25,7 @@ Finally there was no way to return binary safe errors. When implementing generic
 
 The limitations stated so far are the main motivations for a new version of RESP. However the redesign gave us a chance to consider different other improvements that may be worthwhile and make the protocol both more powerful and less dependent on the implicit state of the connection.
 
-The gist of such additional features are to provide the protocol with the ability to support a more generic *push mode* compared to the Pub/Sub mode used by Redis, which is not really built-in in the protocol, but is an agreement between the server and the client about the fact that the connection will consume replies as they arrive. Moreover it was useful to modify the protocol to return *out of band* data, such as attributes that augment the reply. Also the protocol was sometimes abused by the internals of Redis, like for example in the case of *slaveless replication*, in order to support streaming of large strings whose length is initially not known. This specification makes this special mode part of the RESP protocol itself.
+The gist of such additional features are to provide the protocol with the ability to support a more generic *push mode* compared to the Pub/Sub mode used by Redis, which is not really built-in in the protocol, but is an agreement between the server and the client about the fact that the connection will consume replies as they arrive. Moreover it was useful to modify the protocol to return *out of band* data, such as attributes that augment the reply. Also the protocol was sometimes abused by the internals of Redis, like for example in the case of *replicaless replication*, in order to support streaming of large strings whose length is initially not known. This specification makes this special mode part of the RESP protocol itself.
 
 This specification describes RESP3 from scratch, and not just as a change from RESP v2. However differences between the two will be noted while describing the new protocol.
 
@@ -535,9 +535,9 @@ three different parts of the Redis protocol:
 
 1. Pub/Sub is a push-mode connection, where clients receive published data.
 2. The `MONITOR` command implements an *ad-hoc* push mode with a kinda unspecified protocol which is obvious to parse, but still, unspecified.
-3. The Master-Slave link may, at a first glance, be considered a push mode connection. However actually in this case the client (which is the slave), even if is the entity starting the connection, will configure the connection like if the master is a client sending commands, so in practical terms, it is unfair to call this a push mode connection.
+3. The Master-Replica link may, at a first glance, be considered a push mode connection. However actually in this case the client (which is the replica), even if is the entity starting the connection, will configure the connection like if the master is a client sending commands, so in practical terms, it is unfair to call this a push mode connection.
 
-Let's ignore the master-slave link since it is an internal protocol, and
+Let's ignore the master-replica link since it is an internal protocol, and
 as already noted, is an edge case, and focus on the Pub/Sub and `MONITOR`
 modes. They have a common problem:
 

@@ -2,6 +2,7 @@
 
 Versions history:
 * 1.0, 2 May 2018, Initial draft to get community feedbacks.
+* 1.1, 5 Nov 2018, Leave CRLF as terminators + improved "hello reply" section.
 
 ## Background
 
@@ -25,8 +26,6 @@ Finally there was no way to return binary safe errors. When implementing generic
 The limitations stated so far are the main motivations for a new version of RESP. However the redesign gave us a chance to consider different other improvements that may be worthwhile and make the protocol both more powerful and less dependent on the implicit state of the connection.
 
 The gist of such additional features are to provide the protocol with the ability to support a more generic *push mode* compared to the Pub/Sub mode used by Redis, which is not really built-in in the protocol, but is an agreement between the server and the client about the fact that the connection will consume replies as they arrive. Moreover it was useful to modify the protocol to return *out of band* data, such as attributes that augment the reply. Also the protocol was sometimes abused by the internals of Redis, like for example in the case of *slaveless replication*, in order to support streaming of large strings whose length is initially not known. This specification makes this special mode part of the RESP protocol itself.
-
-Finally, in order to follow the standard line termination, in RESP v2 all the protocol tokes are terminated with the two bytes sequence CRLF. Now this choice looks like just a waste of space, so RESP3 is designed in order to terminate everything with just LF.
 
 This specification describes RESP3 from scratch, and not just as a change from RESP v2. However differences between the two will be noted while describing the new protocol.
 
@@ -72,17 +71,17 @@ database space.
 
 In order to illustrate the RESP3 protocol this specification will show
 fragments of the protocol in many sections. In addition of using the escaped
-string format, like "foo\n", we'll use a more readable format where
-"\n" will be presented as `<LF>` followed by an actual newline. Other
+string format, like "foo\r\n", we'll use a more readable format where
+"\r\n" will be presented as `<CR><LF>` followed by an actual newline. Other
 special characters will be displayed as `<\xff>`, where `ff` is the
 hex code of the byte.
 
-So for instance the string `"*1\n$1\nA\n" representing a RESP3 array with
+So for instance the string `"*1\r\n$1\r\nA\r\n" representing a RESP3 array with
 a single string `"A"` as unique element, will be presented like this:
 
-    *1<LF>
-    $1<LF>
-    A<LF>
+    *1<CR><LF>
+    $1<CR><LF>
+    A<CR><LF>
 
 However for the first part of this specification, both this format and
 the escaped string format will be used in order to make sure there is
@@ -93,19 +92,22 @@ When nested aggregate data structures are shown, indentation is used in
 order to make it more clear the actual structure of the protocol. For
 instance instead of writing:
 
-    *2<LF>
-    *2<LF>
-    :1<LF>
-    :2<LF>
-    #t<LF>
+    *2<CR><LF>
+    *2<CR><LF>
+    :1<CR><LF>
+    :2<CR><LF>
+    #t<CR><LF>
 
 We'll write:
 
-    *2<LF>
-        *2<LF>
-            :1<LF>
-            :2<LF>
-        #t<LF>
+    *2<CR><LF>
+        *2<CR><LF>
+            :1<CR><LF>
+            :2<CR><LF>
+        #t<CR><LF>
+
+Both the indentation and the newlines are hence only used in order to improve
+human readability and are not semantical in respect of the actual protocol.
 
 ## RESP3 overview
 
@@ -175,46 +177,45 @@ They consist of just a single typed element.
 
 **Blob string**
 
-The general form is `$<length>\n<bytes>\n`. It is basically exactly like
-in the previous version of RESP, but instead of using CRLF, only LF is used
-to terminate each token.
+The general form is `$<length>\r\n<bytes>\r\n`. It is basically exactly like
+in the previous version of RESP.
 
 The string `"hello world"` is represented by the following protocol:
 
-    $11<LF>
-    helloworld<LF>
+    $11<CR><LF>
+    helloworld<CR><LF>
 
 Or as an escaped string:
 
-    "$11\nhelloworld\n"
+    "$11\nhelloworld\r\n"
 
 The length field is limited to the range of an unsigned 64 bit
 integer. Zero is a valid length, so the empty string is represented by:
 
-    "$0\n\n"
+    "$0\r\n\r\n"
 
 **Simple string**
 
-The general form is `+<string>\n`, so "hello world" is encoded as
+The general form is `+<string>\r\n`, so "hello world" is encoded as
 
-    +hello world<LF>
+    +hello world<CR><LF>
 
 Or as an escaped string:
 
-    "+hello world\n"
+    "+hello world\r\n"
 
-Simple strings cannot contain `<LF>` characters inside.
+Simple strings cannot contain the `<CR>` nor the `<LF>` characters inside.
 
 **Simple error**
 
 This is exactly like a simple string, but the initial byte is `-` instead
 of `+`:
 
-    -ERR this is the error description<LF>
+    -ERR this is the error description<CR><LF>
 
 Or as an escaped string:
 
-    "-ERR this is the error description\n"
+    "-ERR this is the error description\r\n"
 
 The first word in the error is in upper case and describes the error
 code. The remaining string is the error message itself.
@@ -224,32 +225,32 @@ to do pattern matching in the error message, that may change.
 
 **Number**
 
-The general form is `:<number>\n`, so the number 1234 is encoded as
+The general form is `:<number>\r\n`, so the number 1234 is encoded as
 
-    :1234<LF>
+    :1234<CR><LF>
 
 Or as an escaped string:
 
-    ":1234\n"
+    ":1234\r\n"
 
 Valid numbers are in the range of the signed 64 bit integer.
 Larger numbers should use the Big Number type instead.
 
 **Null**
 
-The null type is encoded just as `_\n`, which is just the underscore
-character followed by the `LF` character.
+The null type is encoded just as `_\r\n`, which is just the underscore
+character followed by the `CR` and `LF` characters.
 
 **Double**
 
-The general form is `,<floating-point-number>\n`. For instance 1.23 is
+The general form is `,<floating-point-number>\r\n`. For instance 1.23 is
 encoded as:
 
-    ,1.23<LF>
+    ,1.23<CR><LF>
 
 Or as an escaped string:
 
-    ",1.23\n"
+    ",1.23\r\n"
 
 To just start with `.` assuming an initial zero is invalid.
 Exponential format is invalid.
@@ -257,8 +258,8 @@ To completely miss the decimal part, that is, the point followed by other
 digits, is valid, so the number 10 may be returned both using the number
 or double format:
 
-    ":10\n"
-    ",10\n"
+    ":10\r\n"
+    ",10\r\n"
 
 However the client library should return a floating point number in one
 case and an integer in the other case, if the programming language in which
@@ -266,7 +267,7 @@ the client is implemented has a clear distinction between the two types.
 
 **Boolean**
 
-True and false values are just represented using `#t\n` and `#f\n`
+True and false values are just represented using `#t\r\n` and `#f\r\n`
 sequences. Client libraries implemented in programming languages without
 the boolean type should return to the client the canonical values used
 to represent true and false in such languages. For instance a C program
@@ -274,31 +275,30 @@ should likely return an integer type with a value of 0 or 1.
 
 **Blob error**
 
-The general form is `!<length>\n<bytes>\n`. It is exactly like the String
+The general form is `!<length>\r\n<bytes>\r\n`. It is exactly like the String
 type. However like the Simple error type, the first uppercase word represents
 the error code.
 
 The error `"SYNTAX invalid syntax"` is represented by the following protocol:
 
-    !21<LF>
-    SYNTAX invalid syntax<LF>
+    !21<CR><LF>
+    SYNTAX invalid syntax<CR><LF>
 
 Or as an escaped string:
 
-    "*21\nSYNTAX invalid syntax\n"
+    "*21\r\nSYNTAX invalid syntax\r\n"
 
 **Verbatim string**
 
 This is exactly like the String type, but the initial byte is `=` instead
 of `*`. Moreover the first three bytes provide information about the format
 of the following string, which can be `txt` for plain text, or `mkd` for
-markdown. The forth byte is always `<LF>`. Then the real string follows.
+markdown. The forth byte is always `:`. Then the real string follows.
 
 For instance this is a valid verbatim string:
 
-    =15<LF>
-    txt<LF>
-    Some string<LF>
+    =15<CR><LF>
+    txt:Some string<CR><LF>
 
 Normal client libraries may ignore completely the difference between this
 type and the String type, and return a string in both cases. However interactive
@@ -334,13 +334,13 @@ having to remember if the output must be escaped or not.
 This type represents very large numbers that are out of the range of
 the signed 64 bit numbers that can be represented by the Number type.
 
-The general form is `(<big number>\n`, like in the following example:
+The general form is `(<big number>\r\n`, like in the following example:
 
-    (3492890328409238509324850943850943825024385<LF>
+    (3492890328409238509324850943850943825024385<CR><LF>
 
 Or as an escaped string:
 
-    "(3492890328409238509324850943850943825024385\n"
+    "(3492890328409238509324850943850943825024385\r\n"
 
 Big numbers can be positive or negative, but they must not include a
 decimal part. Client libraries written in languages with support for big
@@ -369,29 +369,29 @@ are implemented as recursive functions that then read N other types.
 
 The format for every aggregate type in RESP3 is always the same:
 
-    <aggregate-type-char><numelements><LF> ... numelements other types ...
+    <aggregate-type-char><numelements><CR><LF> ... numelements other types ...
 
 The aggregate type char for the Array is `*`, so to represent an array
 of three Numbers 1, 2, 3, the following protocol will be emitted:
 
-    *3<LF>
-    :1<LF>
-    :2<LF>
-    :3<LF>
+    *3<CR><LF>
+    :1<CR><LF>
+    :2<CR><LF>
+    :3<CR><LF>
 
 Or as an escaped string:
 
-    "*3\n:1\n:2\n:3\n"
+    "*3\r\n:1\r\n:2\r\n:3\r\n"
 
 Of course an array can also contain other nested arrays:
 
-    *2<LF>
-        *3<LF>
-            :1<LF>
-            $5<LF>
-            hello<LF>
-            :2<LF>
-        #f<LF>
+    *2<CR><LF>
+        *3<CR><LF>
+            :1<CR><LF>
+            $5<CR><LF>
+            hello<CR><LF>
+            :2<CR><LF>
+        #f<CR><LF>
 
 The above represents the array `[[1,"hello",2],false]`
 
@@ -417,11 +417,11 @@ For instance the dictionary represented in JSON by:
 
 Is represented in RESP3 as:
 
-    %2<LF>
-    +first<LF>
-    :1<LF>
-    +second<LF>
-    :2<LF>
+    %2<CR><LF>
+    +first<CR><LF>
+    :1<CR><LF>
+    +second<CR><LF>
+    :2<CR><LF>
 
 Note that after the `%` character, what follow is not, like in the array,
 the number of single items, but the number of field-value pairs.
@@ -441,19 +441,19 @@ the reply is actually a dictionary.
 Sets are exactly like the Array type, but the first byte is `~` instead
 of `*`:
 
-    ~5<LF>
-    +orange<LF>
-    +apple<LF>
-    #t<LF>
-    :100<LF>
-    :999<LF>
+    ~5<CR><LF>
+    +orange<CR><LF>
+    +apple<CR><LF>
+    #t<CR><LF>
+    :100<CR><LF>
+    :999<CR><LF>
 
 However they are semantically different because the represented
 items are *unordered* collections of elements, so the client library should
 return a type that, while not necessarily ordered, has a *test for existence*
 operation running in constant or logarithmic time.
 
-Since many programming languages lack a native set type, it a sensible
+Since many programming languages lack a native set type, a sensible
 choice is to return an Hash where the fields are the elements inside the
 Set type, and the values are just *true* values or any other value.
 
@@ -473,14 +473,14 @@ For instance newer versions of Redis may include the ability to report, for
 every executed command, the popularity of keys. So the reply to the command
 `MGET a b` may be the following:
 
-    |1<LF>
-        +key-popularity<LF>
+    |1<CR><LF>
+        +key-popularity<CR><LF>
         %2
             :a
             ,0.1923
             :b
             ,0.0012
-    *2<LF>
+    *2<CR><LF>
         :2039123
         :9543892
 
@@ -511,13 +511,13 @@ Attributes can appear anywhere before a valid part of the protocol identifying
 a given type, and will inform only the part of the reply that immediately
 follows, like in the following example:
 
-    *3<LF>
-        :1<LF>
-        :2<LF>
-        |1<LF>
+    *3<CR><LF>
+        :1<CR><LF>
+        :2<CR><LF>
+        |1<CR><LF>
             +ttl
             :3600
-        :3<LF>
+        :3<CR><LF>
 
 In the above example the third element of the array has an associated
 auxiliary information of `{ttl:3600}`. Note that it's not up to the client
@@ -534,7 +534,7 @@ In Redis there is already the concept of connection pushing data in at least
 three different parts of the Redis protocol:
 
 1. Pub/Sub is a push-mode connection, where clients receive published data.
-2. The `MONITOR` command implements an ad-hoc push mode with a kinda unspecified protocol which is obvious to parse, but still, unspecified.
+2. The `MONITOR` command implements an *ad-hoc* push mode with a kinda unspecified protocol which is obvious to parse, but still, unspecified.
 3. The Master-Slave link may, at a first glance, be considered a push mode connection. However actually in this case the client (which is the slave), even if is the entity starting the connection, will configure the connection like if the master is a client sending commands, so in practical terms, it is unfair to call this a push mode connection.
 
 Let's ignore the master-slave link since it is an internal protocol, and
@@ -558,11 +558,11 @@ in RESP3 by the push types `pubsub` and `monitor`.
 
 This is an example of push data:
 
-    >4<LF>
-    :pubsub<LF>
-    :message<LF>
-    :somechannel<LF>
-    :this is the message<LF>
+    >4<CR><LF>
+    :pubsub<CR><LF>
+    :message<CR><LF>
+    :somechannel<CR><LF>
+    :this is the message<CR><LF>
 
 *Note that the above format uses simple strings for simplicity, the
 actual Redis implementation would use blob strings instead*
@@ -605,12 +605,16 @@ All the other fields are service dependent. Redis will likely emit
 the following fields:
 
     * server: "redis"
-    * version: the Redis version
+    * version: the Redis (or other software using RESP3) version
     * proto: the protocol version ("3" in the case of RESP3)
-    * mode: standalone, sentinel, cluster (Redis specific field)
-    * role: master or slave (Redis specific field)
-    * modules: list of loaded modules
     * id: the client connection ID
+
+In addition, in the case of the RESP3 implementation of Redis, the following
+fields will also be emitted:
+
+    * mode: standalone, sentinel, cluster
+    * role: master or replica
+    * modules: list of loaded modules as an array of strings
 
 The exact number and value of fields emitted by Redis is however currently
 a work in progress, you should not rely on the above list.

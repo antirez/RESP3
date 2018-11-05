@@ -475,14 +475,16 @@ every executed command, the popularity of keys. So the reply to the command
 
     |1<CR><LF>
         +key-popularity<CR><LF>
-        %2
-            :a
-            ,0.1923
-            :b
-            ,0.0012
+        %2<CR><LF>
+            $1<CR><LF>
+            a<CR><LF>
+            ,0.1923<CR><LF>
+            $1<CR><LF>
+            b<CR><LF>
+            ,0.0012<CR><LF>
     *2<CR><LF>
-        :2039123
-        :9543892
+        :2039123<CR><LF>
+        :9543892<CR><LF>
 
 The actual reply to `MGET` was just the two items array `[2039123,9543892]`,
 however the attributes specify the popularity (frequency of requests) of the

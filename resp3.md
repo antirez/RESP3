@@ -606,9 +606,11 @@ the following fields:
 
     * server: "redis"
     * version: the Redis version
-    * mode: standalone, sentinel, cluster
-    * role: master or slave
+    * proto: the protocol version ("3" in the case of RESP3)
+    * mode: standalone, sentinel, cluster (Redis specific field)
+    * role: master or slave (Redis specific field)
     * modules: list of loaded modules
+    * id: the client connection ID
 
 The exact number and value of fields emitted by Redis is however currently
 a work in progress, you should not rely on the above list.

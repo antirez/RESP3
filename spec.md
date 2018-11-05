@@ -76,7 +76,7 @@ string format, like "foo\r\n", we'll use a more readable format where
 special characters will be displayed as `<\xff>`, where `ff` is the
 hex code of the byte.
 
-So for instance the string `"*1\r\n$1\r\nA\r\n" representing a RESP3 array with
+So for instance the string `"*1\r\n$1\r\nA\r\n"` representing a RESP3 array with
 a single string `"A"` as unique element, will be presented like this:
 
     *1<CR><LF>

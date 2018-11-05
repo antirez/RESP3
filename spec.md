@@ -581,16 +581,42 @@ a callback associated with the push data type. Synchronous clients may
 instead enter a loop and return every new message or command reply.
 
 Note that in this mode it is possible to get both replies and push messages
-at the same time, however the order of the commands and their replies is
-not affected: if a command is called, the next reply received will be the
-one relative of this command, and so forth, even if it is possible that there
-will be push data items to consume before. However synchronous clients
-may of course miss for a long time that there is something to read in
-the socket, because they only read after a command is executed, so the
-client library should still allow the user to specify if the connection
-should be monitored for new messages in some way (usually by entering
-some loop) or not. For asynchronous clients the implementation is a lot more
-obvious.
+at the same time, interleaved in any way, however the order of the commands
+and their replies is not affected: if a command is called, the next reply
+(that is not a push reply) received will be the one relative of this command,
+and so forth, even if it is possible that there will be push data items to
+consume before.
+
+For instance after a `GET key` command, it is possible to get the two following
+valid replies:
+
+    >4<CR><LF>
+    :pubsub<CR><LF>
+    :message<CR><LF>
+    :somechannel<CR><LF>
+    :this is the message<CR><LF>
+    $9<CR><LF>
+    Get-Reply<CR><LF>
+
+Or in inverse order:
+
+    $9<CR><LF>
+    Get-Reply<CR><LF>
+    >4<CR><LF>
+    :pubsub<CR><LF>
+    :message<CR><LF>
+    :somechannel<CR><LF>
+    :this is the message<CR><LF>
+
+Still the client will know that the first non push type reply processed
+will be the actual reply to GET.
+
+However synchronous clients may of course miss for a long time that there is
+something to read in the socket, because they only read after a command is
+executed, so the client library should still allow the user to specify if the
+connection should be monitored for new messages in some way (usually by
+entering some loop) or not. For asynchronous clients the implementation is a
+lot more obvious.
 
 ## Hello replies
 

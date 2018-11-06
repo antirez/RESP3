@@ -289,14 +289,14 @@ The error `"SYNTAX invalid syntax"` is represented by the following protocol:
 
 Or as an escaped string:
 
-    "*21\r\nSYNTAX invalid syntax\r\n"
+    "!21\r\nSYNTAX invalid syntax\r\n"
 
 **Verbatim string**
 
 This is exactly like the String type, but the initial byte is `=` instead
 of `*`. Moreover the first three bytes provide information about the format
 of the following string, which can be `txt` for plain text, or `mkd` for
-markdown. The forth byte is always `:`. Then the real string follows.
+markdown. The fourth byte is always `:`. Then the real string follows.
 
 For instance this is a valid verbatim string:
 
@@ -426,7 +426,7 @@ Is represented in RESP3 as:
     +second<CR><LF>
     :2<CR><LF>
 
-Note that after the `%` character, what follow is not, like in the array,
+Note that after the `%` character, what follows is not, like in the array,
 the number of single items, but the number of field-value pairs.
 
 Maps can have any other type as field and value, however Redis will use
@@ -469,7 +469,7 @@ times, but the protocol does not enforce that: client libraries should try
 to handle such case, and in case of repeated elements, do some effort to
 avoid returning duplicated data, at least if some form of hash is used in
 order to return the reply. Otherwise when returning an array just reading
-what the protocol contians, duplicated items if present could be passed
+what the protocol contains, duplicated items if present could be passed
 by client libraries to the caller. Many implementations will find it very
 natural to avoid duplicates. For instance they'll try to add every read
 element in some Map or Hash or Set data type, and adding the same element
@@ -543,11 +543,11 @@ in a sensible way.
 
 ## Push type
 
-A push connection is once where the usual *request-response* mode of the
+A push connection is one where the usual *request-response* mode of the
 protocol is no longer true, and the server may send to the client asynchronous
 data which was not explicitly requested.
 
-In Redis there is already the concept of connection pushing data in at least
+In Redis there is already the concept of a connection pushing data in at least
 three different parts of the Redis protocol:
 
 1. Pub/Sub is a push-mode connection, where clients receive published data.

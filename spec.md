@@ -126,15 +126,15 @@ to its ability to return complex data types and associated information to
 augment the returned data (for instance the popularity index of a given
 information).
 
-The RESP3 protocol is asymmetrical: only a subset can be sent by the client
-to the server, while the server can return the full set of types available.
-This is due to the fact that RESP is designed to send non structured commands
-like `SET mykey somevalue` or `SADD myset a b c d`. Such commands can be
-represented as arrays, where each argument is an array element, so this is the
-only type the client can send to a server. However different applications
-willing to use RESP3 for other goals may just allow the protocol to be used
-in a "full duplex" fashion where both the ends can use the full set of types
-available.
+The RESP3 protocol can be used asymmetrically, as it is in Redis: only a subset
+can be sent by the client to the server, while the server can return the full set
+of types available. This is due to the fact that RESP is designed to send non
+structured commands like `SET mykey somevalue` or `SADD myset a b c d`. Such
+commands can be represented as arrays, where each argument is an array element,
+so this is the only type the client needs to send to a server. However different
+applications willing to use RESP3 for other goals may just allow the protocol
+to be used in a "full duplex" fashion where both the ends can use the full set
+of types available.
 
 Not all parts of RESP3 are mandatory for clients and servers. In the specific
 case of Redis, RESP3 describes certain functionalities that will be useful

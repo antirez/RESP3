@@ -565,7 +565,7 @@ Moreover a connection for Pub/Sub cannot be used also for `MONITOR` or any other
 push data type, attempting to solve the above issues.
 
 RESP3 push data is represented from the point of view of the protocol exactly
-like the Array type. However the first byte is `>` instead of `@`, and the
+like the Array type. However the first byte is `>` instead of `*`, and the
 first element of the array is always a String item, representing the kind
 of push data the server is sending to the client. All the other fields in the
 push array are type dependent, which means that depending on the type string
@@ -576,10 +576,10 @@ in RESP3 by the push types `pubsub` and `monitor`.
 This is an example of push data:
 
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
 
 *Note that the above format uses simple strings for simplicity, the
 actual Redis implementation would use blob strings instead*
@@ -608,10 +608,10 @@ For instance after a `GET key` command, it is possible to get the two following
 valid replies:
 
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
     $9<CR><LF>
     Get-Reply<CR><LF>
 
@@ -620,10 +620,10 @@ Or in inverse order:
     $9<CR><LF>
     Get-Reply<CR><LF>
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
 
 Still the client will know that the first non push type reply processed
 will be the actual reply to GET.

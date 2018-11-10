@@ -692,7 +692,7 @@ The information in the Hello reply is in part server dependent, but there are
 certain fields that are mandatory for all the RESP3 implementations:
 
     * server: "redis" (or other software name)
-    * version: the srever version
+    * version: the server version
     * proto: the maximum version of the RESP protocol supported
 
 In addition, in the case of the RESP3 implementation of Redis, the following

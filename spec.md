@@ -126,15 +126,15 @@ to its ability to return complex data types and associated information to
 augment the returned data (for instance the popularity index of a given
 information).
 
-The RESP3 protocol is asymmetrical: only a subset can be sent by the client
-to the server, while the server can return the full set of types available.
-This is due to the fact that RESP is designed to send non structured commands
-like `SET mykey somevalue` or `SADD myset a b c d`. Such commands can be
-represented as arrays, where each argument is an array element, so this is the
-only type the client can send to a server. However different applications
-willing to use RESP3 for other goals may just allow the protocol to be used
-in a "full duplex" fashion where both the ends can use the full set of types
-available.
+The RESP3 protocol can be used asymmetrically, as it is in Redis: only a subset
+can be sent by the client to the server, while the server can return the full set
+of types available. This is due to the fact that RESP is designed to send non
+structured commands like `SET mykey somevalue` or `SADD myset a b c d`. Such
+commands can be represented as arrays, where each argument is an array element,
+so this is the only type the client needs to send to a server. However different
+applications willing to use RESP3 for other goals may just allow the protocol
+to be used in a "full duplex" fashion where both the ends can use the full set
+of types available.
 
 Not all parts of RESP3 are mandatory for clients and servers. In the specific
 case of Redis, RESP3 describes certain functionalities that will be useful
@@ -297,14 +297,14 @@ The error `"SYNTAX invalid syntax"` is represented by the following protocol:
 
 Or as an escaped string:
 
-    "*21\r\nSYNTAX invalid syntax\r\n"
+    "!21\r\nSYNTAX invalid syntax\r\n"
 
 **Verbatim string**
 
 This is exactly like the String type, but the initial byte is `=` instead
 of `*`. Moreover the first three bytes provide information about the format
 of the following string, which can be `txt` for plain text, or `mkd` for
-markdown. The forth byte is always `:`. Then the real string follows.
+markdown. The fourth byte is always `:`. Then the real string follows.
 
 For instance this is a valid verbatim string:
 
@@ -434,7 +434,7 @@ Is represented in RESP3 as:
     +second<CR><LF>
     :2<CR><LF>
 
-Note that after the `%` character, what follow is not, like in the array,
+Note that after the `%` character, what follows is not, like in the array,
 the number of single items, but the number of field-value pairs.
 
 Maps can have any other type as field and value, however Redis will use
@@ -477,7 +477,7 @@ times, but the protocol does not enforce that: client libraries should try
 to handle such case, and in case of repeated elements, do some effort to
 avoid returning duplicated data, at least if some form of hash is used in
 order to return the reply. Otherwise when returning an array just reading
-what the protocol contians, duplicated items if present could be passed
+what the protocol contains, duplicated items if present could be passed
 by client libraries to the caller. Many implementations will find it very
 natural to avoid duplicates. For instance they'll try to add every read
 element in some Map or Hash or Set data type, and adding the same element
@@ -551,11 +551,11 @@ in a sensible way.
 
 ## Push type
 
-A push connection is once where the usual *request-response* mode of the
+A push connection is one where the usual *request-response* mode of the
 protocol is no longer true, and the server may send to the client asynchronous
 data which was not explicitly requested.
 
-In Redis there is already the concept of connection pushing data in at least
+In Redis there is already the concept of a connection pushing data in at least
 three different parts of the Redis protocol:
 
 1. Pub/Sub is a push-mode connection, where clients receive published data.

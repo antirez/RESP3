@@ -268,6 +268,14 @@ However the client library should return a floating point number in one
 case and an integer in the other case, if the programming language in which
 the client is implemented has a clear distinction between the two types.
 
+In addition the double reply may return positive or negative infinity
+as the following two stings:
+
+    ",inf\r\n"
+    ",-inf\r\n"
+
+So client implementations should be able to handle this correctly.
+
 **Boolean**
 
 True and false values are just represented using `#t\r\n` and `#f\r\n`
@@ -635,40 +643,71 @@ connection should be monitored for new messages in some way (usually by
 entering some loop) or not. For asynchronous clients the implementation is a
 lot more obvious.
 
-## Hello replies
+## The HELLO command and connection handshake
 
-Hello replies are exactly like Map replies, but they start with the
-byte `@` instead of `%`. They are sent immediately by the server after
-the connection with the client, in order to inform the client about the
-exact object the server represents. The dictionary in the Hello reply is
-server dependent, but there is one item which is mandatory: a field
-named `server` must tell the client the name of the service that implements
-the RESP3 protocol. In the case of Redis the value will just be `redis`.
-All the other fields are service dependent. Redis will likely emit
-the following fields:
+RESP connections should always start sending a special command called HELLO.
+This step accomplishes two things:
+
+1. It allows servers to be backward compatible with RESP2 versions. This is needed in Redis in order to switch more gently to the version 3 of the protocol.
+2. The `HELLO` command is useful in order to return information about the server and the protocol, that the client can use for different goals.
+
+The HELLO command has the following format and arguments:
+
+    HELLO <protocol-version> [AUTH <username> <password>]
+
+Currently only the AUTH option is available, in order to authenticate the client
+in case the server is configured in order to be password protected. Redis 6
+will support ACLs, however in order to just use a general password like in
+Redis 5 clients should use "default" as username (all lower case).
+
+The first argument of the command is the protocol version we want the connection
+to be set. By default the connection starts in RESP2 mode. If we specify a
+connection version which is too big and is not supported by the server, it should
+reply with a -NOPROTO error. Example:
+
+    Client: HELLO 4
+    Server: -NOPROTO sorry this protocol version is not supported
+
+Then the client may retry with a lower protocol version.
+
+Similarly the client can easily detect a server that is only able to speak
+RESP2:
+
+    Client: HELLO 3 AUTH default mypassword
+    Server: -ERR unknown command 'HELLO'
+
+It can then proceed by sending the AUTH command directly and continue talking
+RESP2 to the server.
+
+Note that even if the protocol is supported, the HELLO command may return an
+error and perform no action (so the connection will remain in RESP2 mode) in case
+the authentication credentials are wrong:
+
+    Client: HELLO 3 AUTH default mypassword
+    Server: -ERR invalid password
+    (the connection remains in RESP2 mode)
+
+The successful reply to the HELLO command is just a map reply.
+The information in the Hello reply is server dependent, but there is one item
+which is mandatory: a field named `server` must tell the client the name of the
+service that implements the RESP3 protocol. In the case of Redis the value will
+just be `redis`. All the other fields are service dependent. Redis will likely
+emit the following fields:
 
     * server: "redis"
     * version: the Redis (or other software using RESP3) version
-    * proto: the protocol version ("3" in the case of RESP3)
+    * proto: the maximum version of the RESP protocol supported.
     * id: the client connection ID
 
 In addition, in the case of the RESP3 implementation of Redis, the following
 fields will also be emitted:
 
-    * mode: standalone, sentinel, cluster
-    * role: master or replica
+    * mode: "standalone", "sentinel" or "cluster"
+    * role: "master" or "replica"
     * modules: list of loaded modules as an array of strings
 
 The exact number and value of fields emitted by Redis is however currently
 a work in progress, you should not rely on the above list.
-
-Note that the Hello reply still allows a client that wants to be compatible
-with older versions of Redis to detect the version of the protocol. Upon
-connection the client should send a `PING` command. If the first byte read
-will be `@`, the version of the protocol is RESP3, the Hello reply will
-be processed, and later the `PING` reply will be read. Instead if the first
-byte is not `@` we just read the `PING` reply and switch to RESP version 2
-mode.
 
 ## Acknowledgements
 

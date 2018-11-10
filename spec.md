@@ -688,20 +688,17 @@ the authentication credentials are wrong:
     (the connection remains in RESP2 mode)
 
 The successful reply to the HELLO command is just a map reply.
-The information in the Hello reply is server dependent, but there is one item
-which is mandatory: a field named `server` must tell the client the name of the
-service that implements the RESP3 protocol. In the case of Redis the value will
-just be `redis`. All the other fields are service dependent. Redis will likely
-emit the following fields:
+The information in the Hello reply is in part server dependent, but there are
+certain fields that are mandatory for all the RESP3 implementations:
 
-    * server: "redis"
-    * version: the Redis (or other software using RESP3) version
-    * proto: the maximum version of the RESP protocol supported.
-    * id: the client connection ID
+    * server: "redis" (or other software name)
+    * version: the srever version
+    * proto: the maximum version of the RESP protocol supported
 
 In addition, in the case of the RESP3 implementation of Redis, the following
 fields will also be emitted:
 
+    * id: the client connection ID
     * mode: "standalone", "sentinel" or "cluster"
     * role: "master" or "replica"
     * modules: list of loaded modules as an array of strings

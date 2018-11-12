@@ -190,7 +190,7 @@ The string `"hello world"` is represented by the following protocol:
 
 Or as an escaped string:
 
-    "$11\nhelloworld\r\n"
+    "$11\r\nhelloworld\r\n"
 
 The length field is limited to the range of an unsigned 64 bit
 integer. Zero is a valid length, so the empty string is represented by:

@@ -718,6 +718,21 @@ This specification was written by Salvatore Sanfilippo, however the design was i
 
 For the conversation and ideas to make this specification better.
 
+## FAQ
+
+* **Why the RESP3 line break was not changed to a single character?**
+
+Because that would require a client to send command, and parse replies, in
+a different way based on the fact the client is in RESP v2 or v3 mode.
+Even a client supporting only RESP3, would start sending the `HELLO` command
+with CRLF as separators, since initially the connection is in RESP v2 mode.
+The parsing code would also be designed in order to accept the different line
+break based on the conditions. All in all the saving of one byte did not made
+enough sense in light of a more complex client implementation, especially since
+the way RESP3 is designed, it is mostly a superset of RESP2, so most clients
+will just have to add the parsing of the new data types supported without
+touching the implementation of the old ones.
+
 ## TODOs in this specification
 
 * Document streaming of big strings.

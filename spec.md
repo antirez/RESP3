@@ -708,8 +708,15 @@ a work in progress, you should not rely on the above list.
 
 ## Acknowledgements
 
-This specification was written by Salvatore Sanfilippo, however the design was informed by multiple people that contributed worthwhile ideas and improvements. A special thank to Dvir Volk and Yao Yue for the conversation and ideas around
-having metadata in requests.
+This specification was written by Salvatore Sanfilippo, however the design was informed by multiple people that contributed worthwhile ideas and improvements. A special thank to:
+
+    * Dvir Volk
+    * Yao Yue
+    * Yossi Gottlieb
+    * Marc Gravell
+    * Nick Craver
+
+For the conversation and ideas to make this specification better.
 
 ## TODOs in this specification
 

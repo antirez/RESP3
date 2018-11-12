@@ -301,8 +301,8 @@ Or as an escaped string:
 
 **Verbatim string**
 
-This is exactly like the String type, but the initial byte is `=` instead
-of `*`. Moreover the first three bytes provide information about the format
+This is exactly like the Blob string type, but the initial byte is `=` instead
+of `$`. Moreover the first three bytes provide information about the format
 of the following string, which can be `txt` for plain text, or `mkd` for
 markdown. The fourth byte is always `:`. Then the real string follows.
 

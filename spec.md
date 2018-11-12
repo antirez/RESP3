@@ -584,10 +584,10 @@ in RESP3 by the push types `pubsub` and `monitor`.
 This is an example of push data:
 
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
 
 *Note that the above format uses simple strings for simplicity, the
 actual Redis implementation would use blob strings instead*
@@ -616,10 +616,10 @@ For instance after a `GET key` command, it is possible to get the two following
 valid replies:
 
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
     $9<CR><LF>
     Get-Reply<CR><LF>
 
@@ -628,10 +628,10 @@ Or in inverse order:
     $9<CR><LF>
     Get-Reply<CR><LF>
     >4<CR><LF>
-    :pubsub<CR><LF>
-    :message<CR><LF>
-    :somechannel<CR><LF>
-    :this is the message<CR><LF>
+    +pubsub<CR><LF>
+    +message<CR><LF>
+    +somechannel<CR><LF>
+    +this is the message<CR><LF>
 
 Still the client will know that the first non push type reply processed
 will be the actual reply to GET.

@@ -573,7 +573,7 @@ Moreover a connection for Pub/Sub cannot be used also for `MONITOR` or any other
 push data type, attempting to solve the above issues.
 
 RESP3 push data is represented from the point of view of the protocol exactly
-like the Array type. However the first byte is `>` instead of `@`, and the
+like the Array type. However the first byte is `>` instead of `*`, and the
 first element of the array is always a String item, representing the kind
 of push data the server is sending to the client. All the other fields in the
 push array are type dependent, which means that depending on the type string

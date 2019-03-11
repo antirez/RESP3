@@ -696,7 +696,7 @@ Normally the client will require to support such protocol just in order
 receive data from Redis: in that case is up to Redis (or other servers
 using RESP3) to generate the EOF marker. When the client is also interested
 in implementing such protocol in order to transmit data to Redis (which
-is supported by RESP3), it should generate the SHA1 in the following way:
+is supported by RESP3), it should generate the EOF marker in the following way:
 
 * Initialize a random seed in a way that is unguessable by a potential attacker: in this way if an attacker has control over the data we send, there are still no issues. We recommend fetching data from /dev/urandom. However note that this is not very critical. In the rare applications where the data we send is attacker-controlled, inserting the EOF inside the data stream will just break the client-server protocol, and this is unlikely to create security issues.
 * Use an hash function such as SHA1 in counter mode. Initialize a counter to 0, and every time there is to generate a new EOF marker, perform the following:
@@ -707,12 +707,12 @@ is supported by RESP3), it should generate the SHA1 in the following way:
 
 In the above code the `|` operation means string concatenation.
 
-Clients not wanting to generate an unguessable EOF marker, for instance
+Clients not able to generate an unguessable EOF marker, for instance
 because they are not sure if a secure PRNG is available, should at
 least perform the SHA1 sum of the current local time at the highest
 resolution (for instance microseconds) concatenated with other potentially
-unguessable data like the Redis object serialized handle. For instance
-in the case of the Ruby language:
+unguessable data like the Redis object ID. For instance in the case of the
+Ruby language:
 
     irb(main):017:0* r = Redis.new
     => #<Redis client v4.1.0 for redis://127.0.0.1:6379/0>
@@ -722,7 +722,31 @@ in the case of the Ruby language:
     => 1552325877.302572
 
 The client object ID and the current time converted to float are two good
-candidates to be hashed together.
+candidates to be hashed together. When generating EOF markers in a weak
+way as the above, it's a good idea to mix a fixed static random string
+hardcoded in the client source code itself together with the rest. While
+such string is public, it will guarantee that if the data contains a
+SHA1 of identical data to the current time/ID, yet no collision will happen:
+
+    Concatenate the current object ID and the current time:
+
+    irb(main):021:0> data = "" << r.object_id.to_s << Time.now.to_f.to_s
+    => "702063410765001552326671.760204"
+
+    Concatenate a fixed random string hardcoded in the client:
+
+    irb(main):022:0> data << "a1fccfc8168a900adc481fba2941164c5a56b96a"
+    => "702063410765001552326671.760204a1fccfc8168a900adc481fba2941164c5a56b96a"
+
+    Take the hexdump of the SHA1 digest:
+
+    irb(main):023:0> Digest::SHA1.hexdigest data
+    => "2a6bb160106f0263fc10f49a222407f40d78c74d"
+
+What is critical is to always use SHA1 or an equivalent
+hash function to get an output of at least 20 bytes to turn into 40
+bytes of hexadecimal representation. Otherwise even in the lack of any attack
+we may end generating a string that will collide easily with actual data.
 
 Minimum support for EOF markers:
 

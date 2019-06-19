@@ -1,6 +1,7 @@
 # RESP3 specification
 
-Versions history:
+## Version History
+
 * 1.0, 2 May 2018, Initial draft to get community feedbacks.
 * 1.1, 5 Nov 2018, Leave CRLF as terminators + improved "hello reply" section.
 * 1.2, 5 Nov 2018, A few things are now better specified in the document

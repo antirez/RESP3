@@ -241,6 +241,14 @@ Or as an escaped string:
 Valid numbers are in the range of the signed 64 bit integer.
 Larger numbers should use the Big Number type instead.
 
+A negative number, e.g. `-1234` is encoded with the normal prefix `-`:
+
+    :-1234<CR><LF>
+
+Or as an escaped string:
+
+    ":-1234\r\n"
+
 **Null**
 
 The null type is encoded just as `_\r\n`, which is just the underscore

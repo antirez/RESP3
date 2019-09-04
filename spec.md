@@ -668,99 +668,62 @@ from the keyspace data in memory, is directly sent to the socket. In this
 case we don't have any way to know in advance the final length of the
 string we are transferring.
 
-A streamed string solves the problem by starting the bulk string reply
-with a special format:
+The protocol we used internally was something like that:
 
     $EOF:<40 bytes marker><CR><LF>
     ... any number of bytes of data here not containing the marker ...
     <40 bytes marker>
 
-Note: after the final 40 bytes marker that signals the end of the file
-no `<CR><LF>` ending sequence should be transmitted.
+As we already specified, this was just a *private extension* only known
+by the server itself. It uses an EOF marker that is generated in a pseudo
+random way, and is practically impossible to collide with normal data. However
+such approach, we found, have certain limits when extended to be a known,
+well documented mechanism that Redis can use when talking with other clients.
+We were worried expecially by the following issues:
 
-Basically the string starts with 40 bytes of pseudorandom data obtained
-in a way that will make a collision with the data in practical terms
-impossible (note that it will never be impossible, but any other failure,
-including the end of our civilization, is a lot more likely to happen
-compared to colliding 40 bytes of random data from /dev/urandom).
+1. Generating the EOF: failing at that makes the protocol very fragile, and often even experienced developers don't know much about probability, counting, and randomness.
+2. Parsing the EOF: while not so hard, is non trivial. The client need to implement an algorithm that can detect the EOF even while reading it in two separated calls.
 
-The way the EOF marker should be chosen **is extremely critical**.
-Note that 40 bytes are equivalent to 320 bits of information, and we
-are more than safe using half of that, that is 160 bits. So often such
-40 bytes are just the hexadecimal representation of a 20 bytes string,
-that is, something like that:
+For this reason instead the final version of this specification proposes
+a chunked encoding approach, that is often used in order protocols.
 
-    EOF:f1d2d2f924e986ac86fdf7b36c94bcdf32beec15
+The protocol can be easily explained by a small example, in which the
+string "Hello world" is transmitted without knowing its size in advance:
 
-Normally the client will require to support such protocol just in order
-receive data from Redis: in that case is up to Redis (or other servers
-using RESP3) to generate the EOF marker. When the client is also interested
-in implementing such protocol in order to transmit data to Redis (which
-is supported by RESP3), it should generate the EOF marker in the following way:
+    $?<CR><LF>
+    ;4<CR><LF>
+    Hell<CR><LF>
+    ;5<CR><LF>
+    o wor<CR><LF>
+    ;1<CR><LF>
+    d<CR><LF>
+    ;0<CR><LF>
 
-* Initialize a random seed in a way that is unguessable by a potential attacker: in this way if an attacker has control over the data we send, there are still no issues. We recommend fetching data from /dev/urandom. However note that this is not very critical. In the rare applications where the data we send is attacker-controlled, inserting the EOF inside the data stream will just break the client-server protocol, and this is unlikely to create security issues.
-* Use an hash function such as SHA1 in counter mode. Initialize a counter to 0, and every time there is to generate a new EOF marker, perform the following:
+Basically the transfer starts with `$?`. We use the same prefix as normal
+strings, that is `$`, but later instead of the count we use a question mark
+in order to communicate the client that this is a chunked encoding transfer,
+and we don't know the final size yet.
 
-    COUNTER = COUNTER + 1
-    RANDOM = SHA1(SECRET | COUNTER | SECRET)
-    RETURN HEXDUMP(RANDOM)
+Later the differnet parts are transferred like that:
 
-In the above code the `|` operation means string concatenation.
+    ;<count><CR><LF>
+    ... coun bytes of data ...<CR><LF>
 
-Clients not able to generate an unguessable EOF marker, for instance
-because they are not sure if a secure PRNG is available, should at
-least perform the SHA1 sum of the current local time at the highest
-resolution (for instance microseconds) concatenated with other potentially
-unguessable data like the Redis object ID. For instance in the case of the
-Ruby language:
+The transferring program can send as many parts as it likes, there are no
+limits. Finally in order to signal that the transfer has ended, a part
+with length zero, without any data, is transferred:
 
-    irb(main):017:0* r = Redis.new
-    => #<Redis client v4.1.0 for redis://127.0.0.1:6379/0>
-    irb(main):018:0> r.object_id
-    => 70206341076500
-    irb(main):019:0> Time.now.to_f
-    => 1552325877.302572
+    ;0<CR><LF>
 
-The client object ID and the current time converted to float are two good
-candidates to be hashed together. When generating EOF markers in a weak
-way as the above, it's a good idea to mix a fixed static random string
-hardcoded in the client source code itself together with the rest. While
-such string is public, it will guarantee that if the data contains a
-SHA1 of identical data to the current time/ID, yet no collision will happen:
-
-    Concatenate the current object ID and the current time:
-
-    irb(main):021:0> data = "" << r.object_id.to_s << Time.now.to_f.to_s
-    => "702063410765001552326671.760204"
-
-    Concatenate a fixed random string hardcoded in the client:
-
-    irb(main):022:0> data << "a1fccfc8168a900adc481fba2941164c5a56b96a"
-    => "702063410765001552326671.760204a1fccfc8168a900adc481fba2941164c5a56b96a"
-
-    Take the hexdump of the SHA1 digest:
-
-    irb(main):023:0> Digest::SHA1.hexdigest data
-    => "2a6bb160106f0263fc10f49a222407f40d78c74d"
-
-What is critical is to always use SHA1 or an equivalent
-hash function to get an output of at least 20 bytes to turn into 40
-bytes of hexadecimal representation. Otherwise even in the lack of any attack
-we may end generating a string that will collide easily with actual data.
-
-Minimum support for EOF markers:
-
-* A RESP3 client **must be able** to receive streamed strings.
-* A RESP3 client does not require to be able to send streamed strings.
-* A RESP3 client supporting streamed strings should be also make sure to support them in RESP2 mode: this may be useful because certain commands may return streamed strings even in RESP2 mode in case a special option was specified.
-* A server supporting RESP3 guarantees to be able to accept streamed strings even when in RESP2 mode.
-
-Note that when the `HELLO` command is used specifying version 2, still it
-will reply with the maximum version of the protocol supported, so the
-client will be able to understand if the server will accept steamed strings
-in RESP2 mode.
+Note that right now the Redis server does not implement such protocol, that
+is, there is no command that will reply like that, however it is likely that
+we'll soon implement this ability at least for modules. However it is currently
+not planned to have support to send streamed strings to the server, as
+part of a command.
 
 ## Streamed aggregated data types
+
+Work in progress.
 
 ## The HELLO command and connection handshake
 

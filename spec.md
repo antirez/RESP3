@@ -723,7 +723,61 @@ part of a command.
 
 ## Streamed aggregated data types
 
-Work in progress.
+Sometimes it is useful to send an aggregated data type whose size is not
+known in advance. Imagine a search application written as a Redis module
+that collects the data it finds in the inverted index using multiple threads
+and, as it finds results, it sends such results to the client.
+
+In this, and many other situations, the size of the result set is not known
+in advance. So far the only possibility to solve the issue has been to
+buffer the result in memory, and at the end send everything, because the
+old RESP2 protocol had no mechanism in order to send aggregated data types
+without specifying the final number of elements immediately.
+
+For instance the Array type is like that:
+
+    *123<CR><LF>      (number of items)
+    :1<CR><LF>        (items...)
+    :2<CR><LF>
+    ...
+
+RESP3 extends this mechanism, allowing to send all the aggregated data
+types of type Array, Set and Map, not specifying the length, but instead
+using an explicit terminator. The transfer is initiated like that
+(in the case of the Array type):
+
+    *?<CR><LF>
+
+So instead of the length, we just use a '?' character. Then we can
+continue to reply with other RESP3 types:
+
+    :1<CR><LF>
+    :2<CR><LF>
+    :3<CR><LF>
+
+Finally we can terminate the Array using a special **END type**, that
+has the following format:
+
+    .<CR><LF>
+
+Unbound Sets are exactly like Arrays with the difference that the trasnfer
+wills tart with `~` instead of `*` character. However with the Map type
+things are marginally different: the program emitting the protocol *must*
+make sure that it emits an even number of elements, since every couple
+represents a field-value pair:
+
+    %?<CR><LF>
+    +a<CR><LF>
+    :1<CR><LF>
+    +b<CR><LF>
+    :2<CR><LF>
+    .<CR><LF>
+
+Currently there is no Redis 6 command that uses such extension to the protocol,
+however it is possible that modules running in Redis 6 will use such feature
+so it is suggested for client libraries to implement this part of
+the specification ASAP, and if this is not the case, to clearly document that
+this part of RESP3 is not supported.
 
 ## The HELLO command and connection handshake
 

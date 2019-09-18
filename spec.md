@@ -760,7 +760,7 @@ has the following format:
 
     .<CR><LF>
 
-Unbound Sets are exactly like Arrays with the difference that the trasnfer
+Unbound Sets are exactly like Arrays with the difference that the transfer
 wills tart with `~` instead of `*` character. However with the Map type
 things are marginally different: the program emitting the protocol *must*
 make sure that it emits an even number of elements, since every couple

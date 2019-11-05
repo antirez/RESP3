@@ -1,6 +1,26 @@
 # RESP3 specification
 
-Versions history:
+  - [Version History](#version-history)
+  - [Background](#background)
+  - [Why existing serialization protocols are not good enough?](#why-existing-serialization-protocols-are-not-good-enough)
+  - [Conventions used in this document](#conventions-used-in-this-document)
+  - [RESP3 overview](#resp3-overview)
+  - [RESP3 types](#resp3-types)
+  - [Simple types](#simple-types)
+  - [Aggregate data types overview](#aggregate-data-types-overview)
+  - [Map type](#map-type)
+  - [Set reply](#set-reply)
+  - [Attribute type](#attribute-type)
+  - [Push type](#push-type)
+  - [Streamed strings](#streamed-strings)
+  - [Streamed aggregated data types](#streamed-aggregated-data-types)
+  - [The HELLO command and connection handshake](#the-hello-command-and-connection-handshake)
+  - [Acknowledgements](#acknowledgements)
+  - [FAQ](#faq)
+  - [TODOs in this specification](#todos-in-this-specification)
+
+## Version History
+
 * 1.0, 2 May 2018, Initial draft to get community feedbacks.
 * 1.1, 5 Nov 2018, Leave CRLF as terminators + improved "hello reply" section.
 * 1.2, 5 Nov 2018, A few things are now better specified in the document

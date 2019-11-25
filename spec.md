@@ -171,7 +171,7 @@ The following are the types implemented by RESP3:
 * Map: an ordered collection of key-value pairs. Keys and values can be any other RESP3 type.
 * Set: an unordered collection of N other types.
 * Attribute: Like the Map type, but the client should keep reading the reply ignoring the attribute type, and return it to the client as additional information.
-* Push: Out of band data. The format is like the Array type, but the client should just check the first string element, stating the type of the out of band data, a call a callback if there is one registered for this specific type of push information. Push types are not related to replies, since they are information that the server may push at any time in the connection, so the client should keep reading if it is reading the reply of a command.
+* Push: Out of band data. The format is like the Array type, but the client should just check the first string element, stating the type of the out of band data, a callback if there is one registered for this specific type of push information. Push types are not related to replies, since they are information that the server may push at any time in the connection, so the client should keep reading if it is reading the reply of a command.
 * Hello: Like the Map type, but is sent only when the connection between the client and the server is established, in order to welcome the client with different information like the name of the server, its version, and so forth.
 * Big number: a large number non representable by the Number type
 
@@ -188,11 +188,11 @@ in the previous version of RESP.
 The string `"hello world"` is represented by the following protocol:
 
     $11<CR><LF>
-    helloworld<CR><LF>
+    hello world<CR><LF>
 
 Or as an escaped string:
 
-    "$11\r\nhelloworld\r\n"
+    "$11\r\nhello world\r\n"
 
 The length field is limited to the range of an unsigned 64 bit
 integer. Zero is a valid length, so the empty string is represented by:

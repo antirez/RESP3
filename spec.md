@@ -175,6 +175,8 @@ The following are the types implemented by RESP3:
 * Hello: Like the Map type, but is sent only when the connection between the client and the server is established, in order to welcome the client with different information like the name of the server, its version, and so forth.
 * Big number: a large number non representable by the Number type
 
+Note that the prefix `/` is also reserved in Redis for Gopher mode.
+
 ## Simple types
 
 This section describes all the RESP3 types which are not aggregate types.

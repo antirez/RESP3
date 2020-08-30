@@ -695,8 +695,8 @@ string "Hello world" is transmitted without knowing its size in advance:
     Hell<CR><LF>
     ;5<CR><LF>
     o wor<CR><LF>
-    ;1<CR><LF>
-    d<CR><LF>
+    ;2<CR><LF>
+    ld<CR><LF>
     ;0<CR><LF>
 
 Basically the transfer starts with `$?`. We use the same prefix as normal
@@ -707,7 +707,7 @@ and we don't know the final size yet.
 Later the differnet parts are transferred like that:
 
     ;<count><CR><LF>
-    ... coun bytes of data ...<CR><LF>
+    ... count bytes of data ...<CR><LF>
 
 The transferring program can send as many parts as it likes, there are no
 limits. Finally in order to signal that the transfer has ended, a part

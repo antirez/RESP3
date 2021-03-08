@@ -542,8 +542,8 @@ follows, like in the following example:
         :1<CR><LF>
         :2<CR><LF>
         |1<CR><LF>
-            +ttl
-            :3600
+            +ttl<CR><LF>
+            :3600<CR><LF>
         :3<CR><LF>
 
 In the above example the third element of the array has an associated

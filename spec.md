@@ -271,7 +271,7 @@ case and an integer in the other case, if the programming language in which
 the client is implemented has a clear distinction between the two types.
 
 In addition the double reply may return positive or negative infinity
-as the following two stings:
+as the following two strings:
 
     ",inf\r\n"
     ",-inf\r\n"
